@@ -15,6 +15,8 @@ SEARCH_FOLDERS = [
     r"C:\Users\ANANIA\Downloads"
 ]
 
+last_search_results = []
+
 
 def find_file(query):
     matches = []
@@ -38,22 +40,20 @@ while True:
         print("Jarvis: Goodbye!")
         break
 
-    # Open applications
-    if prompt.startswith("open "):
-        app = prompt.replace("open ", "")
-
-        if app in APPS:
-            os.startfile(APPS[app])
-            print(f"Jarvis: Opening {app}...")
-        else:
-            print("Jarvis: I don't know that application yet.")
-
-        continue
-
-    # Time command
-    if prompt == "what time is it":
+    # Natural language commands
+    if "time" in prompt:
         current_time = datetime.now().strftime("%I:%M %p")
         print(f"Jarvis: The time is {current_time}")
+        continue
+
+    if "open chrome" in prompt:
+        os.startfile(APPS["chrome"])
+        print("Jarvis: Opening Chrome...")
+        continue
+
+    if "open vscode" in prompt or "open vs code" in prompt:
+        os.startfile(APPS["vscode"])
+        print("Jarvis: Opening VS Code...")
         continue
 
     # File search
@@ -61,13 +61,30 @@ while True:
         query = prompt.replace("find file ", "")
 
         results = find_file(query)
+        last_search_results = results
 
         if results:
             print("Jarvis: I found these files:")
-            for result in results:
-                print("-", result)
+            for i, result in enumerate(results, start=1):
+                print(f"{i}. {result}")
         else:
             print("Jarvis: No matching files found.")
+
+        continue
+
+    # Open searched file
+    if prompt.startswith("open file "):
+        try:
+            index = int(prompt.replace("open file ", "")) - 1
+
+            if 0 <= index < len(last_search_results):
+                os.startfile(last_search_results[index])
+                print("Jarvis: Opening file...")
+            else:
+                print("Jarvis: Invalid file number.")
+
+        except ValueError:
+            print("Jarvis: Please provide a valid file number.")
 
         continue
 
